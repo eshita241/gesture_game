@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
-import math
 from pynput.keyboard import Controller
+import time
 
 # Initialize MediaPipe Hands and Keyboard Controller
 mp_hands = mp.solutions.hands
@@ -15,9 +15,10 @@ if not cap.isOpened():
 else:
     print("Camera is working")
 
-# Function to simulate key press
+# Function to simulate key press and release
 def press_key(key):
     keyboard.press(key)
+    time.sleep(0.1)  # Short delay to simulate real key press
     keyboard.release(key)
 
 # Track the last gesture to prevent repeated key presses
@@ -35,6 +36,7 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
         result = hands.process(rgb_frame)
 
         gesture = ""  # Current gesture
+        key_to_press = ""  # Key to simulate
 
         if result.multi_hand_landmarks:
             for hand_landmarks in result.multi_hand_landmarks:
