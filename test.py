@@ -1,10 +1,12 @@
 import cv2
 import mediapipe as mp
 import math
+from pynput.keyboard import Controller
 
-# Initialize MediaPipe Hands
+# Initialize MediaPipe Hands and Keyboard Controller
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
+keyboard = Controller()
 
 # Initialize webcam
 cap = cv2.VideoCapture(0)
@@ -13,13 +15,13 @@ if not cap.isOpened():
 else:
     print("Camera is working")
 
+# Function to simulate key press
+def press_key(key):
+    keyboard.press(key)
+    keyboard.release(key)
 
-# Function to calculate angle between three points
-def calculate_angle(a, b, c):
-    angle = math.degrees(
-        math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0])
-    )
-    return abs(angle)
+# Track the last gesture to prevent repeated key presses
+last_gesture = None
 
 with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
     while cap.isOpened():
@@ -32,36 +34,47 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = hands.process(rgb_frame)
 
+        gesture = ""  # Current gesture
+
         if result.multi_hand_landmarks:
             for hand_landmarks in result.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
                 # Get landmark coordinates
                 landmarks = hand_landmarks.landmark
-                x_list = [lm.x for lm in landmarks]
-                y_list = [lm.y for lm in landmarks]
-
-                # Determine the direction of the gesture
                 wrist = landmarks[0]
                 index_finger_tip = landmarks[8]
 
                 dx = index_finger_tip.x - wrist.x
                 dy = index_finger_tip.y - wrist.y
 
-                gesture = ""
+                # Determine gesture based on movement
                 if abs(dx) > abs(dy):
                     if dx > 0.1:
                         gesture = "Right"
+                        key_to_press = 'd'
                     elif dx < -0.1:
                         gesture = "Left"
+                        key_to_press = 'a'
                 else:
                     if dy < -0.1:
                         gesture = "Up"
+                        key_to_press = 'w'
                     elif dy > 0.1:
                         gesture = "Down"
+                        key_to_press = 's'
 
-                # Display the gesture
-                cv2.putText(frame, gesture, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                # Only trigger key press if the gesture has changed
+                if gesture != "" and gesture != last_gesture:
+                    press_key(key_to_press)
+                    last_gesture = gesture
+
+                # Display the gesture and key pressed
+                cv2.putText(frame, f"Gesture: {gesture} | Key: {key_to_press if gesture else 'None'}",
+                            (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+        else:
+            last_gesture = None  # Reset when no hand detected
 
         cv2.imshow('Hand Gesture Recognition', frame)
 
