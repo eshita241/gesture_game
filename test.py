@@ -46,23 +46,33 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
                 landmarks = hand_landmarks.landmark
                 wrist = landmarks[0]
                 index_finger_tip = landmarks[8]
+                index_finger_end = landmarks[5]
+                middle_finger_tip = landmarks[12]
+                middle_finger_end = landmarks[9]
 
-                dx = index_finger_tip.x - wrist.x
-                dy = index_finger_tip.y - wrist.y
+                dx_index = index_finger_tip.x - index_finger_end.x
+                dy_index = index_finger_tip.y - index_finger_end.y
+
+                dx_middle = middle_finger_tip.x - middle_finger_end.x
+                dy_middle = middle_finger_tip.y - middle_finger_end.y
+
+                # Average the vectors to get combined direction
+                dx = (dx_index + dx_middle) / 2
+                dy = (dy_index + dy_middle) / 2
 
                 # Determine gesture based on movement
                 if abs(dx) > abs(dy):
-                    if dx > 0.1:
+                    if dx > 0.05:
                         gesture = "Right"
                         key_to_press = 'd'
-                    elif dx < -0.1:
+                    elif dx < -0.05:
                         gesture = "Left"
                         key_to_press = 'a'
                 else:
-                    if dy < -0.1:
+                    if dy < -0.05:
                         gesture = "Up"
                         key_to_press = 'w'
-                    elif dy > 0.1:
+                    elif dy > 0.05:
                         gesture = "Down"
                         key_to_press = 's'
 
