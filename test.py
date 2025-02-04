@@ -1,14 +1,15 @@
 import cv2
 import mediapipe as mp
 from pynput.keyboard import Controller
+from pynput.mouse import Controller as MouseController, Button 
 import time
+import pyautogui  
 
-# Initialize MediaPipe Hands and Keyboard Controller
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 keyboard = Controller()
+mouse = MouseController()
 
-# Initialize webcam
 cap = cv2.VideoCapture(0)
 if not cap.isOpened():
     print("Camera not working")
@@ -16,12 +17,13 @@ else:
     print("Camera is working")
 
 def release_all_movement_keys():
-    for key in ['w', 'a', 's', 'd', 'o']:
+    for key in ['w', 'a', 's', 'd', '\\']:
         keyboard.release(key)
 
-# Track the last gesture and key pressed
 last_gesture = None
 current_key_pressed = None
+
+screen_width, screen_height = 1920, 1080
 
 with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
     while cap.isOpened():
@@ -29,13 +31,12 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
         if not ret:
             break
 
-        # Flip the frame for natural interaction
         frame = cv2.flip(frame, 1)
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = hands.process(rgb_frame)
 
-        gesture = ""  # Current gesture
-        key_to_press = ""  # Key to simulate
+        gesture = ""  
+        key_to_press = ""  
 
         if result.multi_hand_landmarks:
             for hand_landmarks in result.multi_hand_landmarks:
@@ -61,7 +62,6 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
                 fingers_folded = all(hand_landmarks.landmark[i].y > hand_landmarks.landmark[i - 2].y for i in [8, 12, 16, 20])
                 thumbs_up = thumb_tip.y < thumb_base.y and fingers_folded
 
-                # Average the vectors to get combined direction
                 dx = (dx_index + dx_middle) / 2
                 dy = (dy_index + dy_middle) / 2
 
@@ -70,7 +70,7 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
                     key_to_press = ""
                 elif thumbs_up:
                     gesture = "Shoot"
-                    key_to_press = 'o'
+                    key_to_press = '\\'
                 elif abs(dx) > abs(dy):
                     if dx > 0.1:
                         gesture = "Right"
@@ -86,7 +86,6 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
                         gesture = "Down"
                         key_to_press = 's'
 
-                # Handle continuous key pressing
                 if gesture != last_gesture:
                     if current_key_pressed:
                         keyboard.release(current_key_pressed)
@@ -98,17 +97,29 @@ with mp_hands.Hands(max_num_hands=1, min_detection_confidence=0.7) as hands:
 
                     last_gesture = gesture
 
-                # Display the gesture and key pressed
+                if result.multi_hand_landmarks:
+                    index_finger_x = int(index_finger_tip.x * screen_width)
+                    index_finger_y = int(index_finger_tip.y * screen_height)
+                    mouse.position = (index_finger_x, index_finger_y)
+
+                    thumb_index_dist = abs(thumb_tip.x - index_finger_tip.x) + abs(thumb_tip.y - index_finger_tip.y)
+                    if thumb_index_dist < 0.05:  
+                        gesture = "Click"
+                        print("Click Detected!")
+
+                        mouse.click(Button.left)  
+                        pyautogui.click(x=index_finger_x, y=index_finger_y)  
+
                 cv2.putText(frame, f"Gesture: {gesture} | Key: {key_to_press if gesture else 'None'}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         else:
             if current_key_pressed:
                 keyboard.release(current_key_pressed)
                 current_key_pressed = None
-            last_gesture = None  # Reset when no hand detected
+            last_gesture = None  
 
         cv2.imshow('Hand Gesture Recognition', frame)
 
-        if cv2.waitKey(1) & 0xFF == 27:  # Press 'Esc' to exit
+        if cv2.waitKey(1) & 0xFF == 27:  
             break
 
 cap.release()
