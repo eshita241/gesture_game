@@ -1,7 +1,8 @@
-from launcher_ui import GameLauncherUI
-import tkinter as tk
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from launcher_ui import ModernGameLauncher
 import subprocess
 import os
+import sys
 
 def launch_krunker():
     script_path = os.path.join(os.path.dirname(__file__), 'krunker.py')
@@ -13,8 +14,17 @@ def launch_subway():
     subprocess.Popen(['python', script_path])
     ui.set_status("Launching Subway...")
 
-root = tk.Tk()
-ui = GameLauncherUI(root)
-ui.set_krunker_command(launch_krunker)
-ui.set_subway_command(launch_subway)
-root.mainloop()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    main_window = QMainWindow()
+    ui = ModernGameLauncher()
+    main_window.setCentralWidget(ui)
+
+    # Set commands for the buttons
+        # Connect button signals to their respective methods
+    ui.krunker_btn.clicked.connect(launch_krunker)
+    ui.subway_btn.clicked.connect(launch_subway)
+
+
+    main_window.show()
+    sys.exit(app.exec_())
