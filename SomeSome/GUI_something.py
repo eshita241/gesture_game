@@ -1,171 +1,137 @@
 import sys
+import subprocess
 import os
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                            QLabel, QPushButton, QFrame, QHBoxLayout)
-from PyQt5.QtGui import QFont, QFontDatabase, QPixmap
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QPushButton, 
+                            QLabel, QGridLayout, QMainWindow, QFrame, QHBoxLayout)
+from PyQt5.QtGui import QFont, QPixmap, QPalette, QBrush
 from PyQt5.QtCore import Qt, QSize
 
-class CyberLauncher(QMainWindow):
-    def _init_(self):
-        super()._init_()
+class ModernLauncher(QMainWindow):
+    def __init__(self):
+        super().__init__()
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle('Cyber Launcher')
-        self.setFixedSize(400, 600)  # Increased vertical size
-        
-        # Set main background color
+        self.setWindowTitle('⚡ SYSTEM APPLICATIONS ⚡')
+        screen = QApplication.desktop().screenGeometry()
+        width = int(screen.width() * 0.8)
+        height = int(screen.height() * 0.8)
+        self.setGeometry(int(screen.width()*0.1), int(screen.height()*0.1), width, height)
+
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #FFD62E;
+                background-color: #0a0a14;
             }
         """)
 
-        # Main widget and layout
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        layout = QVBoxLayout(main_widget)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(15)
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        main_layout = QHBoxLayout()
+        central_widget.setLayout(main_layout)
 
-        # Top section with brand and menu
-        top_section = QHBoxLayout()
-        
-        # Brand text
-        brand = QLabel('mostafa\nzidi')
-        brand.setStyleSheet("""
-            QLabel {
-                color: #000;
-                font-size: 16px;
-                font-weight: 500;
-                padding: 0;
+        left_panel = QFrame()
+        left_panel.setStyleSheet("""
+            QFrame {
+                background-color: #0a0a14;
+                border-right: 2px solid #00fff5;
+                margin: 10px;
             }
         """)
-        top_section.addWidget(brand)
-
-        # Menu toggle
-        menu_container = QWidget()
-        menu_container.setFixedSize(24, 18)
-        menu_layout = QVBoxLayout(menu_container)
-        menu_layout.setSpacing(4)
+        left_layout = QVBoxLayout()
         
-        for _ in range(3):
-            line = QFrame()
-            line.setFrameShape(QFrame.HLine)
-            line.setStyleSheet("""
-                QFrame {
-                    background-color: #000;
-                    border: none;
-                    min-height: 2px;
-                    max-height: 2px;
-                }
+        image_label = QLabel()
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(script_dir, 'img.png')
+        pixmap = QPixmap(image_path)
+        scaled_pixmap = pixmap.scaled(int(width*0.3), height, Qt.KeepAspectRatio)
+        image_label.setPixmap(scaled_pixmap)
+        image_label.setAlignment(Qt.AlignCenter)
+        left_layout.addWidget(image_label)
+        left_panel.setLayout(left_layout)
+        left_panel.setFixedWidth(int(width*0.3))
+        main_layout.addWidget(left_panel)
+
+        right_panel = QWidget()
+        right_layout = QVBoxLayout()
+
+        header = QLabel('SYSTEM APPLICATIONS')
+        header.setFont(QFont('Arial', 32, QFont.Bold))
+        header.setStyleSheet("""
+            color: #00fff5;
+            padding: 20px;
+            margin: 10px;
+        """)
+        header.setAlignment(Qt.AlignCenter)
+        right_layout.addWidget(header)
+
+        grid = QGridLayout()
+        grid.setSpacing(20)
+
+        apps = [
+            ('TERMINAL//CMD', 'cmd.exe', os.path.join(script_dir, 'image.png'), '#ff003c'),
+            ('CALC//SYS', 'calc.exe', os.path.join(script_dir, 'image.png'), '#17b978'),
+            ('TEXT//EDIT', 'notepad.exe', 'text_bg.png', '#00fff5'),
+            ('PAINT//PRO', 'mspaint.exe', 'paint_bg.png', '#ff6b6b'),
+            ('NET//BROWSE', 'chrome.exe', 'browser_bg.png', '#4e00ff'),
+            ('FILE//SYS', 'explorer.exe', 'files_bg.png', '#00d8d8')
+        ]
+
+        for idx, (app_name, command, bg_image, color) in enumerate(apps):
+            frame = QFrame()
+            frame.setStyleSheet(f"""
+                QFrame {{
+                    border: 2px solid {color};
+                    border-radius: 10px;
+                    background-color: #0a0a14;
+                    min-height: 150px;
+                }}
             """)
-            menu_layout.addWidget(line)
+            
+            button = QPushButton(app_name)
+            button.setFont(QFont('Arial', 14, QFont.Bold))
+            button.setMinimumSize(180, 130)
+            button.setStyleSheet(f"""
+                QPushButton {{
+                    color: {color};
+                    border: none;
+                    border-radius: 8px;
+                    padding: 15px;
+                    text-align: center;
+                    background-color: transparent;
+                }}
+                QPushButton:hover {{
+                    background-color: rgba(0, 0, 0, 0.5);
+                    border: 2px solid {color};
+                }}
+            """)
+            button.clicked.connect(lambda checked, cmd=command: self.launch_app(cmd))
+            
+            layout = QVBoxLayout(frame)
+            layout.addWidget(button)
+            grid.addWidget(frame, idx//2, idx%2)
 
-        top_section.addWidget(menu_container, alignment=Qt.AlignRight | Qt.AlignTop)
-        layout.addLayout(top_section)
+        right_layout.addLayout(grid)
 
-        # Add spacing
-        layout.addSpacing(40)
-
-        # Cyber text
-        cyber_text = QLabel('CYBER\nPUNK')
-        cyber_text.setStyleSheet("""
-            QLabel {
-                color: #000;
-                font-size: 72px;
-                font-weight: 700;
-                letter-spacing: -2px;
-                line-height: 0.8;
-            }
+        status = QLabel('SYSTEM STATUS: READY | SELECT APPLICATION TO LAUNCH')
+        status.setStyleSheet("""
+            color: #00fff5;
+            padding: 10px;
+            font-size: 14px;
         """)
-        layout.addWidget(cyber_text)
+        status.setAlignment(Qt.AlignLeft)
+        right_layout.addWidget(status)
 
-        # Add spacing
-        layout.addSpacing(40)
+        right_panel.setLayout(right_layout)
+        main_layout.addWidget(right_panel)
 
-        # Title
-        title = QLabel("LET'S BUILD THE FUTURE")
-        title.setStyleSheet("""
-            QLabel {
-                color: #000;
-                font-size: 16px;
-                font-weight: bold;
-            }
-        """)
-        layout.addWidget(title)
-
-        # Subtitle
-        subtitle = QLabel("LET'S BUILD A NEW UNIVERSE IN CYBERPUNK-2077 AND EXPLORE THE FUTURE.")
-        subtitle.setStyleSheet("""
-            QLabel {
-                color: #333;
-                font-size: 14px;
-                line-height: 1.4;
-            }
-        """)
-        subtitle.setWordWrap(True)
-        subtitle.setFixedWidth(280)
-        layout.addWidget(subtitle)
-
-        # Add spacing
-        layout.addSpacing(20)
-
-        # Join button
-        join_button = QPushButton('Join')
-        join_button.setFixedSize(100, 36)
-        join_button.setStyleSheet("""
-            QPushButton {
-                background-color: #fff;
-                color: #000;
-                border-radius: 18px;
-                font-size: 14px;
-                font-weight: bold;
-                border: none;
-            }
-            QPushButton:hover {
-                background-color: #f0f0f0;
-            }
-        """)
-        layout.addWidget(join_button)
-
-        # Character image placeholder
-        character_image = QLabel()
-        script_dir = os.path.dirname(os.path.abspath(_file_))
-        image_path = os.path.join(script_dir, 'character.png')  # Replace with your image
-        if os.path.exists(image_path):
-            pixmap = QPixmap(image_path)
-            character_image.setPixmap(pixmap.scaled(
-                320, 300, 
-                Qt.KeepAspectRatio, 
-                Qt.SmoothTransformation
-            ))
-        character_image.setAlignment(Qt.AlignBottom | Qt.AlignCenter)
-        layout.addWidget(character_image)
-
-        # Add remaining space to bottom
-        layout.addStretch()
-
-def load_fonts():
-    """Load custom fonts and return the font family name"""
-    font_path = os.path.join(os.path.dirname(_file_), 'SpaceGrotesk-Bold.ttf')
-    font_id = QFontDatabase.addApplicationFont(font_path)
-    if font_id < 0:
-        print("Warning: Error loading custom font, falling back to system font")
-        return "Arial"
-    else:
-        font_families = QFontDatabase.applicationFontFamilies(font_id)
-        if font_families:
-            return font_families[0]
-        return "Arial"
+    def launch_app(self, app_command):
+        try:
+            subprocess.Popen(app_command)
+        except Exception as e:
+            self.statusBar().showMessage(f"ERROR: {str(e)}", 3000)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    
-    # Load and set default font
-    default_font = load_fonts()
-    app.setFont(QFont(default_font))
-    
-    ex = CyberLauncher()
+    ex = ModernLauncher()
     ex.show()
     sys.exit(app.exec_())
