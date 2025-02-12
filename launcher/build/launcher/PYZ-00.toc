@@ -62,6 +62,7 @@
   ('fractions', 'C:\\Python311\\Lib\\fractions.py', 'PYMODULE'),
   ('getopt', 'C:\\Python311\\Lib\\getopt.py', 'PYMODULE'),
   ('gettext', 'C:\\Python311\\Lib\\gettext.py', 'PYMODULE'),
+  ('glob', 'C:\\Python311\\Lib\\glob.py', 'PYMODULE'),
   ('gzip', 'C:\\Python311\\Lib\\gzip.py', 'PYMODULE'),
   ('hashlib', 'C:\\Python311\\Lib\\hashlib.py', 'PYMODULE'),
   ('importlib', 'C:\\Python311\\Lib\\importlib\\__init__.py', 'PYMODULE'),
@@ -138,6 +139,7 @@
   ('quopri', 'C:\\Python311\\Lib\\quopri.py', 'PYMODULE'),
   ('random', 'C:\\Python311\\Lib\\random.py', 'PYMODULE'),
   ('selectors', 'C:\\Python311\\Lib\\selectors.py', 'PYMODULE'),
+  ('shlex', 'C:\\Python311\\Lib\\shlex.py', 'PYMODULE'),
   ('shutil', 'C:\\Python311\\Lib\\shutil.py', 'PYMODULE'),
   ('signal', 'C:\\Python311\\Lib\\signal.py', 'PYMODULE'),
   ('socket', 'C:\\Python311\\Lib\\socket.py', 'PYMODULE'),
@@ -155,5 +157,6 @@
   ('typing', 'C:\\Python311\\Lib\\typing.py', 'PYMODULE'),
   ('urllib', 'C:\\Python311\\Lib\\urllib\\__init__.py', 'PYMODULE'),
   ('urllib.parse', 'C:\\Python311\\Lib\\urllib\\parse.py', 'PYMODULE'),
+  ('webbrowser', 'C:\\Python311\\Lib\\webbrowser.py', 'PYMODULE'),
   ('zipfile', 'C:\\Python311\\Lib\\zipfile.py', 'PYMODULE'),
   ('zipimport', 'C:\\Python311\\Lib\\zipimport.py', 'PYMODULE')])
