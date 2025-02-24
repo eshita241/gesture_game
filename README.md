@@ -17,7 +17,6 @@ The Solution:
 3. Designed an User-friendly interface ensuring smooth interaction and easy customization for different games.
 4. Enhanced Immersion – Transforms gaming into a more natural and engaging experience, redefining how players interact with virtual environments.
 
-Flowchart:
 ![image](https://github.com/user-attachments/assets/2eade71d-a069-4191-a450-e9ef2b3006d5)
 
 
